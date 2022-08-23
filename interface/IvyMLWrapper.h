@@ -2,7 +2,6 @@
 #define IVYMLWRAPPER_H
 
 #include <unordered_map>
-#include <map>
 #include <vector>
 #include "IvyFramework/IvyDataTools/interface/StdExtensions.h"
 
