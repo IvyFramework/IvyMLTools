@@ -36,12 +36,10 @@ bool IvyXGBoostInterface::build(TString fname, std::vector<TString> const& varna
     return false;
   }
 
-  defval = missing_entry_val;
   nColumns = nCols;
   nRows = varnames.size()/nColumns;
-
+  defval = missing_entry_val;
   variable_names = varnames;
-  for (auto const& vv:variable_names) variables[vv] = defval;
 
   booster = new BoosterHandle;
   SAFE_XGBOOST(XGBoosterCreate(nullptr, 0, booster));

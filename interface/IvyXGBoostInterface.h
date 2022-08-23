@@ -12,7 +12,6 @@ protected:
   unsigned long long nRows;
   IvyMLDataType_t defval;
   std::vector<TString> variable_names;
-  std::map<TString, float> variables;
 
 public:
   IvyXGBoostInterface();

@@ -17,19 +17,12 @@ using namespace IvyStreamHelpers;
 template<typename T> bool IvyXGBoostInterface::eval(std::unordered_map<TString, IvyMLDataType_t> const& vars, std::vector<T>& res){
   res.clear();
 
-  for (auto const& vv:vars){
-    auto it_var = variables.find(vv.first);
-    if (it_var==variables.end()){
-      IVYerr << "IvyXGBoostInterface::eval: Variable " << vv.first << " is not in the set of input data collection." << endl;
-      return false;
-    }
-    it_var->second = vv.second;
-  }
-
   IvyMLDataType_t* data_arr = new IvyMLDataType_t[nColumns*nRows];
   IvyMLDataType_t* data_arr_ptr = &(data_arr[0]);
-  for (auto& vv:variables){
-    *data_arr_ptr = vv.second;
+  for (auto& vv:variable_names){
+    auto it_vars = vars.find(vv);
+    if (it_vars==vars.end()) *data_arr_ptr = defval;
+    else *data_arr_ptr = it_vars->second;
     data_arr_ptr++;
   };
 
@@ -45,19 +38,20 @@ template<typename T> bool IvyXGBoostInterface::eval(std::unordered_map<TString, 
   for (bst_ulong rr=0; rr<nout; rr++) res.push_back(static_cast<T>(score[rr]));
 
   delete[] data_arr;
-  for (auto& vv:variables) vv.second = defval;
-
   return true;
 }
 
 template<typename T> bool IvyXGBoostInterface::eval(std::unordered_map<TString, IvyMLDataType_t> const& vars, T& res){
   std::vector<T> vres;
-  this->eval(vars, vres);
+  bool success = this->eval(vars, vres);
   if (vres.empty() || vres.size()!=1){
     IVYerr << "IvyXGBoostInterface::eval: The vector of results has size = " << vres.size() << " != 1." << endl;
     assert(0);
+    success = false;
   }
-  return vres.front();
+
+  res = vres.front();
+  return success;
 }
 template bool IvyXGBoostInterface::eval<float>(std::unordered_map<TString, IvyMLDataType_t> const& vars, float& res);
 template bool IvyXGBoostInterface::eval<double>(std::unordered_map<TString, IvyMLDataType_t> const& vars, double& res);
