@@ -40,6 +40,16 @@ printenv() {
     eval $(${ivydatatools}/setup.sh ${envopts})
   fi
 
+  pythonappend="${PKGDIR}/python"
+  end=""
+  if [[ ! -z "${PYTHONPATH+x}" ]]; then
+    end=":${PYTHONPATH}"
+  fi
+  if [[ "${end}" != *"$pythonappend"* ]]; then
+    echo "export PYTHONPATH=${pythonappend}${end}"
+    export PYTHONPATH=${pythonappend}${end}
+  fi
+
   if [[ -z "${XGBOOST_PATH+x}" ]]; then
     echo "export XGBOOST_PATH=${xgboost_path}"
     export XGBOOST_PATH=${xgboost_path}
@@ -69,6 +79,16 @@ doenv() {
   if [[ -d ${ivydatatools} ]]; then
     envopts="env standalone"
     eval $(${ivydatatools}/setup.sh ${envopts})
+  fi
+
+  pythonappend="${PKGDIR}/python"
+  end=""
+  if [[ ! -z "${PYTHONPATH+x}" ]]; then
+    end=":${PYTHONPATH}"
+  fi
+  if [[ "${end}" != *"$pythonappend"* ]]; then
+    export PYTHONPATH="${pythonappend}${end}"
+    echo "Temporarily using PYTHONPATH as ${PYTHONPATH}"
   fi
 
   export XGBOOST_PATH=${xgboost_path}

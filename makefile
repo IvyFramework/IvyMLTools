@@ -20,6 +20,7 @@ SCRIPTSDIR           = $(COMPILEPATH)scripts/
 OBJDIR               = $(COMPILEPATH)obj/
 LIBDIR               = $(COMPILEPATH)lib/
 TESTDIR              = $(COMPILEPATH)test/
+PYTHONDIR            = $(COMPILEPATH)python/
 RUNDIR               = $(COMPILEPATH)
 LIBSHORT             = $(PROJECTNAME)$(PACKAGENAME)
 LIB                  = lib$(LIBSHORT).so
@@ -77,15 +78,19 @@ BINSCXX = $(wildcard $(BINDIR)*.cxx)
 
 
 .PHONY: all help compile clean
-.SILENT: alldirs clean $(OBJECTS) $(DEPS) $(LIBRULE)
+.SILENT: alldirs pythoninit clean $(OBJECTS) $(DEPS) $(LIBRULE)
 
 
-all: $(OBJECTS) $(LIBRULE)
+all: $(OBJECTS) $(LIBRULE) pythoninit
 
 
 alldirs:
 	mkdir -p $(OBJDIR); \
 	mkdir -p $(LIBDIR);
+
+pythoninit:
+	echo "Creating python init"; \
+	touch $(PYTHONDIR)__init__.py
 
 $(LIBRULE):	$(OBJECTS) | alldirs
 	echo "Linking $(LIB)"; \
@@ -109,6 +114,8 @@ clean:
 	rm -f $(BINDIR)*.o
 	rm -f $(BINDIR)*.so
 	rm -f $(BINDIR)*.d
+	rm -f $(PYTHONDIR)__init__.py
+	rm -f $(PYTHONDIR)*.pyc
 	rm -rf $(RUNDIR)Pdfdata
 	rm -f $(RUNDIR)*.DAT
 	rm -f $(RUNDIR)*.dat
