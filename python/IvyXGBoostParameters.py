@@ -1,6 +1,9 @@
 from copy import deepcopy as copy_deep
 
 class IvyXGBoostParameters:
+   """
+   A container of XGBoost booster parameters.
+   """
    def __init__(self):
       self.params = dict()
       # From https://xgboost.readthedocs.io/en/stable/parameter.html
@@ -41,6 +44,10 @@ class IvyXGBoostParameters:
 
 
    def setParameters(self, **kwargs):
+      """
+      Call to set parameters that are already defined.
+      This function checks if they are defined, and throws a runtime error if they are not.
+      """
       for key in kwargs:
          if key not in self.params.keys():
             raise RuntimeError("IvyXGBoostParameters::setParameters: The argument '{}' is not part of the set of parameters.".format(key))
@@ -51,5 +58,24 @@ class IvyXGBoostParameters:
             self.params[key] = kwargs[key]
 
 
+   def defineParameters(self, **kwargs):
+      """
+      Call to define parameters other than what is already defined through the constructor and initialize them.
+      This function does not check whether a parameter is already defined, so it can also be called as an unchecked version of IvyXGBoostParameters::setParameters.
+      However, it checks the types of parameters that are already defined. The call throws a runtime error if the types are inconsistent.
+      """
+      for key in kwargs:
+         if key in self.params.keys():
+            target_type = type(self.params[key])
+            if target_type != type(kwargs[key]):
+               raise RuntimeError("IvyXGBoostParameters::defineParameters: The type of the argument '{}' should be {}.".format(key, target_type))
+         self.params[key] = kwargs[key]
+
+
    def getParameters(self):
+      """
+      Call to get the set of parameters in order to use them in training.
+      Note that the returned dictionary is a deep copy, so the user should not expact the original class member 'params' to be returned.
+      The user is not supposed to have access to that class member other than through the setParameters and defineParameters functions!
+      """
       return copy_deep(self.params)
