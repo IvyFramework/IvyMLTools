@@ -26,7 +26,37 @@ class IvyXGBoostDataInput:
       self.data_test = None
 
 
-   def load_input(self, file_name, tree_name, train_fraction=0.5, weight_name = None, class_type = None):
+   def add_data(self, features_data, weights, class_values, train_fraction, shuffle=False):
+      """
+      Add data from an existing set of lists.
+      - features_data: 2D numpy array of floats for the feature values arranged as [rows=entries][columns=features]
+      - weights: 1D numpy array of floats for the weight values
+      - class_values: 1D numpy array of ints for the class values
+      - train_fraction: Fraction of data used for training (default = 0.5)
+      """
+      feat_train, feat_test, wgt_train, wgt_test, class_train, class_test = train_test_split(
+         features_data, weights, class_values,
+         train_size = train_fraction,
+         random_state = 12345,
+         shuffle = shuffle
+      )
+
+      data_train = [feat_train, wgt_train, class_train]
+      data_test = [feat_test, wgt_test, class_test]
+      if self.data_train is None:
+         self.data_train = data_train
+         self.data_test = data_test
+      else:
+         for idx in range(0, 3):
+            if self.data_train[idx].ndim == 1:
+               self.data_train[idx] = np.concatenate([self.data_train[idx], data_train[idx]])
+               self.data_test[idx] = np.concatenate([self.data_test[idx], data_test[idx]])
+            else:
+               self.data_train[idx] = np.row_stack([self.data_train[idx], data_train[idx]])
+               self.data_test[idx] = np.row_stack([self.data_test[idx], data_test[idx]])
+
+
+   def load_input(self, file_name, tree_name, train_fraction=0.5, shuffle=False, weight_name = None, class_type = None):
       """
       Loads a ROOT file with a TTree in it.
       - file_name: Input ROOT file name
@@ -77,19 +107,4 @@ class IvyXGBoostDataInput:
          class_values = np.full(nEntries, class_type, dtype=np.int32)
 
       feat_data = np.column_stack([ arrs[v] for v in self.features ])
-      feat_train, feat_test, wgt_train, wgt_test, class_train, class_test = train_test_split(
-         feat_data, weights, class_values,
-         train_size = train_fraction,
-         random_state = 12345,
-         shuffle = False
-      )
-
-      data_train = [feat_train, wgt_train, class_train]
-      data_test = [feat_test, wgt_test, class_test]
-      if self.data_train is None:
-         self.data_train = data_train
-         self.data_test = data_test
-      else:
-         for idx in range(0, 3):
-            self.data_train[idx] = np.row_stack([self.data_train[idx], data_train[idx]])
-            self.data_test[idx] = np.row_stack([self.data_test[idx], data_test[idx]])
+      self.add_data(feat_data, weights, class_values, train_fraction, shuffle)
