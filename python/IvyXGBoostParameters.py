@@ -46,7 +46,7 @@ class IvyXGBoostParameters:
    def setParameters(self, **kwargs):
       """
       Call to set parameters that are already defined.
-      This function checks if they are defined, and throws a runtime error if they are not.
+      This function checks if they are defined, and throws a runtime error otherwise.
       """
       for key in kwargs:
          if key not in self.params.keys():
