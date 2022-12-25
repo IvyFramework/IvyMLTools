@@ -29,7 +29,7 @@ template<typename T> bool IvyXGBoostInterface::eval(std::unordered_map<TString, 
   };
 
   bst_ulong nout = 0;
-  const float* score;
+  const IvyMLDataType_t* score;
   DMatrixHandle dvalues;
   SAFE_XGBOOST(XGDMatrixCreateFromMat(data_arr, nSample, nFeatures, defval, &dvalues));
   SAFE_XGBOOST(XGBoosterPredict(*booster, dvalues, 0, 0, &nout, &score));
