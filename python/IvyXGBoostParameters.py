@@ -1,30 +1,48 @@
+from copy import deepcopy as copy_deep
+
 class IvyXGBoostParameters:
    def __init__(self):
       self.params = dict()
-      self.params['objective'] = 'binary:logistic'
-      self.params['eta'] = 0.07
-      self.params['max_depth'] = 5
+      # From https://xgboost.readthedocs.io/en/stable/parameter.html
+      ## General parameters
+      self.params['booster'] = "gbtree" # Only option supported at the moment.
+      self.params['nthread'] = 1 # Number of parallel threads used to run XGBoost.
+      ## Parameters for tree booster
+      self.params['eta'] = 0.07 # Step size shrinkage used in update to prevents overfitting.
+      self.params['num_round'] = 500 # Number of rounds for boosting. Remember to increase this value for small 'eta'.
+      self.params['gamma'] = 2.0 # Minimum loss reduction required to make a further partition on a leaf node of the tree.
+      self.params['max_depth'] = 5 # Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.
+      self.params['min_child_weight'] = 1.0 # Minimum sum of instance weight (hessian) needed in a child to accept partitioning.
+      self.params['max_delta_step'] = 0.0 # Maximum delta step we allow each leaf output to be. If the value is set to 0, it means there is no constraint.
+      self.params['subsample'] = 0.6 # Subsample ratio of the training instances to randomly sample the training data prior to growing trees in order to prevent overfitting.
+      self.params['sampling_method'] = "uniform" # The method to use to sample the training instances. See above link for the different options.
+      self.params['colsample_bytree'] = 1.0 # Subsample ratio of columns when constructing each tree.
+      self.params['colsample_bylevel'] = 1.0 # Subsample ratio of columns for each level.
+      self.params['colsample_bynode'] = 1.0 # Subsample ratio of columns for each node (split).
+      self.params['alpha'] = 8.0 # L1 regularization term on weights. Increasing this value will make model more conservative.
+      self.params['lambda'] = 1.0 # L2 regularization term on weights. Increasing this value will make model more conservative.
+      self.params['tree_method'] = "auto" # The tree construction algorithm used in XGBoost. See above link for the details.
+      #self.params['scale_pos_weight'] = 1.0
+      # Control the balance of positive and negative weights, useful for unbalanced classes.
+      # We actually rebalance weights on our own and do not use this feature.
+      # In multi-class training, it gets more complicated than just a simple factor.
+      ## Learning task parameters
+      #self.params['num_class'] = 2
+      #self.params['objective'] = "binary:logistic"
+      # Options for 'objective' are
+      # - 'binary:logistic' for logistic regression for binary classification with output as a probability.
+      # - 'multi:softprob' for multiclass classification using the softmax objective with output as the probability of each class. Needs 'num_class' to be set as well, which we do internally.
+      # See the above link for more options ans explanations.
+      # We sety both 'objective' and 'num_class' ourselves.
       self.params['silent'] = 1
-      self.params['nthread'] = 1
-      self.params['eval_metric'] = "auc"
-      self.params['subsample'] = 0.6
-      self.params['alpha'] = 8.0
-      self.params['gamma'] = 2.0
-      self.params['lambda'] = 1.0
-      self.params['min_child_weight'] = 1.0
-      self.params['colsample_bytree'] = 1.0
-      self.params["scale_pos_weight"] = 1.0
-      self.num_round = 500
+      self.params['eval_metric'] = "logloss"
+      # Evaluation metrics for validation data; switched to mlogloss when objective=multi:softprob.
+      # Cold also be set to 'auc'.
 
 
    def setParameters(self, **kwargs):
       for key in kwargs:
-         if key=="num_round":
-            target_type = type(self.num_round)
-            if target_type != type(kwargs[key]):
-               raise RuntimeError("IvyXGBoostParameters::setParameters: The type of the argument 'num_round' should be {}.".format(key, target_type))
-            self.num_round = kwargs[key]
-         elif key not in self.params.keys():
+         if key not in self.params.keys():
             raise RuntimeError("IvyXGBoostParameters::setParameters: The argument '{}' is not part of the set of parameters.".format(key))
          else:
             target_type = type(self.params[key])
@@ -33,9 +51,5 @@ class IvyXGBoostParameters:
             self.params[key] = kwargs[key]
 
 
-   def getXGBoostParameters(self):
-      return self.params
-
-
-   def getXGBoostNumRounds(self):
-      return self.num_rounds
+   def getParameters(self):
+      return copy_deep(self.params)

@@ -13,7 +13,7 @@ public:
   IvyMLWrapper(){};
   virtual ~IvyMLWrapper(){};
 
-  virtual bool build(TString fname, std::vector<TString> const& varnames, IvyMLDataType_t missing_entry_val, unsigned long long nCols) = 0;
+  virtual bool build(TString fname, std::vector<TString> const& varnames, IvyMLDataType_t missing_entry_val) = 0;
 
 };
 

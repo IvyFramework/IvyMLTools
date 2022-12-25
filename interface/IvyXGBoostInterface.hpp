@@ -17,7 +17,9 @@ using namespace IvyStreamHelpers;
 template<typename T> bool IvyXGBoostInterface::eval(std::unordered_map<TString, IvyMLDataType_t> const& vars, std::vector<T>& res){
   res.clear();
 
-  IvyMLDataType_t* data_arr = new IvyMLDataType_t[nColumns*nRows];
+  constexpr unsigned long long nSample = 1;
+  const unsigned long long nFeatures = variable_names.size();
+  IvyMLDataType_t* data_arr = new IvyMLDataType_t[nFeatures];
   IvyMLDataType_t* data_arr_ptr = &(data_arr[0]);
   for (auto& vv:variable_names){
     auto it_vars = vars.find(vv);
@@ -29,7 +31,7 @@ template<typename T> bool IvyXGBoostInterface::eval(std::unordered_map<TString, 
   bst_ulong nout = 0;
   const float* score;
   DMatrixHandle dvalues;
-  SAFE_XGBOOST(XGDMatrixCreateFromMat(data_arr, nColumns, nRows, defval, &dvalues));
+  SAFE_XGBOOST(XGDMatrixCreateFromMat(data_arr, nSample, nFeatures, defval, &dvalues));
   SAFE_XGBOOST(XGBoosterPredict(*booster, dvalues, 0, 0, &nout, &score));
   SAFE_XGBOOST(XGDMatrixFree(dvalues));
 

@@ -6,8 +6,6 @@
 IvyXGBoostInterface::IvyXGBoostInterface() :
   IvyMLWrapper(),
   booster(nullptr),
-  nColumns(0),
-  nRows(0),
   defval(0)
 {}
 
@@ -16,7 +14,7 @@ IvyXGBoostInterface::~IvyXGBoostInterface(){
   delete booster;
 }
 
-bool IvyXGBoostInterface::build(TString fname, std::vector<TString> const& varnames, IvyMLDataType_t missing_entry_val, unsigned long long nCols){
+bool IvyXGBoostInterface::build(TString fname, std::vector<TString> const& varnames, IvyMLDataType_t missing_entry_val){
   HostHelpers::ExpandEnvironmentVariables(fname);
   if (!HostHelpers::FileExists(fname)){
     IVYerr << "IvyXGBoostInterface::build: File " << fname << " does not exist." << endl;
@@ -27,17 +25,7 @@ bool IvyXGBoostInterface::build(TString fname, std::vector<TString> const& varna
     IVYerr << "IvyXGBoostInterface::build: Booster is already built." << endl;
     return false;
   }
-  if (nCols==0){
-    IVYerr << "IvyXGBoostInterface::build: Number of columns (" << nCols << ") is invalid." << endl;
-    return false;
-  }
-  if (varnames.size()%nCols != 0){
-    IVYerr << "IvyXGBoostInterface::build: Number of variables (" << varnames.size() << ") is not divisible by the number of columns (" << nCols << ")." << endl;
-    return false;
-  }
 
-  nColumns = nCols;
-  nRows = varnames.size()/nColumns;
   defval = missing_entry_val;
   variable_names = varnames;
 

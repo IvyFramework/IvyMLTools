@@ -8,8 +8,6 @@
 class IvyXGBoostInterface : public IvyMLWrapper{
 protected:
   BoosterHandle* booster;
-  unsigned long long nColumns;
-  unsigned long long nRows;
   IvyMLDataType_t defval;
   std::vector<TString> variable_names;
 
@@ -17,7 +15,7 @@ public:
   IvyXGBoostInterface();
   virtual ~IvyXGBoostInterface();
 
-  bool build(TString fname, std::vector<TString> const& varnames, IvyMLDataType_t missing_entry_val, unsigned long long nCols=1);
+  bool build(TString fname, std::vector<TString> const& varnames, IvyMLDataType_t missing_entry_val);
 
   std::vector<TString> const& getVariableNames() const{ return variable_names; }
 
