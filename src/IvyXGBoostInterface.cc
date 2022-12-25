@@ -15,15 +15,19 @@ IvyXGBoostInterface::~IvyXGBoostInterface(){
 }
 
 bool IvyXGBoostInterface::build(TString fname, std::vector<TString> const& varnames, IvyMLDataType_t missing_entry_val){
+  if (booster){
+    IVYerr << "IvyXGBoostInterface::build: The booster is already built." << endl;
+    return false;
+  }
+  if (fname == ""){
+    IVYerr << "IvyXGBoostInterface::build: The file name is an empty string. This function should be called to load models from a file." << endl;
+    assert(0);
+  }
+
   HostHelpers::ExpandEnvironmentVariables(fname);
   if (!HostHelpers::FileExists(fname)){
     IVYerr << "IvyXGBoostInterface::build: File " << fname << " does not exist." << endl;
     assert(0);
-  }
-
-  if (booster){
-    IVYerr << "IvyXGBoostInterface::build: Booster is already built." << endl;
-    return false;
   }
 
   defval = missing_entry_val;
