@@ -9,9 +9,11 @@ from IvyXGBoostParameters import IvyXGBoostParameters
 class IvyXGBoostTrainer:
    def __init__(self):
       self.booster = None
+      self.prediction_train = None
+      self.prediction_test = None
 
 
-   def train(self, xgb_input, xgb_params, early_stopping_rounds=None, scale_weights=True):
+   def train(self, xgb_input, xgb_params, early_stopping_rounds=None, scale_weights=True, save_predictions=False):
       data_train = xgb_input.data_train
       data_test = xgb_input.data_test
 
@@ -21,17 +23,21 @@ class IvyXGBoostTrainer:
       nClasses = classes.size
       if nClasses==1:
          raise RuntimeError("IvyXGBoostTrainer::train: Cannot train with only one class.")
-      elif nClasses>2:
-         params['num_class'] = nClasses
-         if 'objective' not in params.keys():
-            params['objective'] = "multi:softprob"
-         if params['eval_metric'] == "logloss":
-            params['eval_metric'] = "mlogloss"
       else:
-         if 'objective' not in params.keys():
-            params['objective'] = "binary:logistic"
-         if params['eval_metric'] == "mlogloss":
-            params['eval_metric'] = "logloss"
+         print("IvyXGBoostTrainer::train: {} classes were identified.".format(nClasses))
+         if nClasses>2:
+            params['num_class'] = nClasses
+            if 'objective' not in params.keys():
+               params['objective'] = "multi:softprob"
+            if params['eval_metric'] == "logloss":
+               params['eval_metric'] = "mlogloss"
+         else:
+            if 'objective' not in params.keys():
+               params['objective'] = "binary:logistic"
+            if params['eval_metric'] == "mlogloss":
+               params['eval_metric'] = "logloss"
+         print("- objective = {}".format(params['objective']))
+         print("- eval_metric = {}".format(params['eval_metric']))
 
       wgts_train = np.abs(data_train[1])
       wgts_test = np.abs(data_test[1])
@@ -49,7 +55,15 @@ class IvyXGBoostTrainer:
       eval_list = [(dtrain,'train'), (dtest,'eval')]
       self.booster = xgb.train(params, dtrain, params['num_round'], eval_list, early_stopping_rounds=early_stopping_rounds)
 
+      if save_predictions:
+         print("IvyXGBoostTrainer::train: Saving the predictions...")
+         self.prediction_train = self.booster.predict(dtrain)
+         self.prediction_test = self.booster.predict(dtest)
 
-      def save_model(self, fname):
-         if self.booster is not None:
+
+   def save_model(self, fname):
+      if self.booster is not None:
+         if fname.endswith(".json"):
+            self.booster.dump_model(fname)
+         else:
             self.booster.save_model(fname)

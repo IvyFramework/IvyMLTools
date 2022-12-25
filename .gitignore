@@ -24,6 +24,8 @@
 **/*.eps
 test/*.root
 test/*.txt
+test/*.bin
+test/*.json
 *.root
 *.txt
 obj
