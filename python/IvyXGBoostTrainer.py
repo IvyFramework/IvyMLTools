@@ -61,7 +61,11 @@ class IvyXGBoostTrainer:
       dtrain = xgb.DMatrix( data_train[0], label=data_train[2], weight=wgts_train, feature_names=xgb_input.features )
       dtest = xgb.DMatrix( data_test[0], label=data_test[2], weight=wgts_test, feature_names=xgb_input.features )
       dcontrol = xgb.DMatrix( data_control[0], label=data_control[2], weight=wgts_control, feature_names=xgb_input.features ) if hasControlData else None
-      eval_list = [(dtrain,'train'), (dtest,'eval')]
+      eval_list = None
+      if hasControlData:
+         eval_list = [(dtrain,'train'), (dcontrol,'control'), (dtest,'eval')]
+      else:
+         eval_list = [(dtrain,'train'), (dtest,'eval')]
       self.booster = xgb.train(params, dtrain, params['num_round'], eval_list, early_stopping_rounds=early_stopping_rounds)
 
       if save_predictions:
