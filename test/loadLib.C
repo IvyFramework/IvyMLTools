@@ -10,6 +10,8 @@
   gSystem->AddIncludePath(inc_this_dir+"/IvyFramework/IvyDataTools/interface/");
   gSystem->AddIncludePath(inc_this_dir+"/IvyFramework/IvyMLTools/interface/");
   gSystem->AddIncludePath(inc_this_dir);
+  gSystem->AddIncludePath("-I${XGBOOST_PATH}/include");
+  gSystem->AddIncludePath("-I${XGBOOST_PATH}/rabit/include");
 
   gSystem->Load("libCore");
   gSystem->Load("libRIO");
@@ -23,6 +25,7 @@
   gSystem->Load("libGraf");
   gSystem->Load("libRooFitCore");
   gSystem->Load("libRooFit");
+  gSystem->Load("libxgboost");
   gSystem->Load("libIvyFrameworkIvyDataTools.so");
   gSystem->Load("libIvyFrameworkIvyMLTools.so");
 }

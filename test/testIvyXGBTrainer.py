@@ -47,6 +47,8 @@ xgbdata.add_data(xx2,1.,2,0.5,control_fraction=1./3.)
 xgbdata.add_data(xx3,1.,0,0.5,control_fraction=1./3.)
 xgbdata.add_data(xx4,1.,3,0.5,control_fraction=1./3.)
 
+class_types = xgbdata.class_types()
+
 xgbparams = IvyXGBoostParameters()
 xgbparams.setParameters(
    num_round=500, eta=0.05
@@ -54,8 +56,8 @@ xgbparams.setParameters(
 
 xgbtrainer = IvyXGBoostTrainer()
 xgbtrainer.train(xgbdata,xgbparams,early_stopping_rounds=10,scale_weights=True, save_predictions=True)
-xgbtrainer.save_model("test_model.bin")
-xgbtrainer.save_model("test_model.dump")
+xgbtrainer.save_model("test_model_ivyxgb.bin")
+xgbtrainer.save_model("test_model_ivyxgb.dump")
 
 dsets_compare = []
 
@@ -64,21 +66,21 @@ pred_train_discrete = np.argmax(pred_train,axis=1)
 pred_train = np.column_stack((xgbdata.data_train[0],xgbdata.data_train[2],pred_train))
 print("Training sample size: {}".format(pred_train.shape[0]))
 print(pred_train)
-dsets_compare.append(["Training sample", xgbdata.data_train[2], pred_train_discrete])
+dsets_compare.append(["Training sample", xgbdata.data_train[2], pred_train_discrete, xgbdata.data_train[0], xgbdata.data_train[1], pred_train])
 
 pred_test = np.array(xgbtrainer.prediction_test, dtype=np.float32)
 pred_test_discrete = np.argmax(pred_test,axis=1)
 pred_test = np.column_stack((xgbdata.data_test[0],xgbdata.data_test[2],pred_test))
 print("Test sample size: {}".format(pred_test.shape[0]))
 print(pred_test)
-dsets_compare.append(["Test sample", xgbdata.data_test[2], pred_test_discrete])
+dsets_compare.append(["Test sample", xgbdata.data_test[2], pred_test_discrete, xgbdata.data_test[0], xgbdata.data_test[1], pred_test])
 
 pred_control = np.array(xgbtrainer.prediction_control, dtype=np.float32)
 pred_control_discrete = np.argmax(pred_control,axis=1)
 pred_control = np.column_stack((xgbdata.data_control[0],xgbdata.data_control[2],pred_control))
 print("Control sample size: {}".format(pred_control.shape[0]))
 print(pred_control)
-dsets_compare.append(["Control sample", xgbdata.data_control[2], pred_control_discrete])
+dsets_compare.append(["Control sample", xgbdata.data_control[2], pred_control_discrete, xgbdata.data_control[0], xgbdata.data_control[1], pred_control])
 
 # Plot the results
 normalize_confMat = True
@@ -89,7 +91,6 @@ for ipanel in range(len(dsets_compare)):
    panel_title = dsets_compare[ipanel][0]
    true_classes = dsets_compare[ipanel][1]
    predicted_classes = dsets_compare[ipanel][2]
-   class_types = np.unique(true_classes)
    panel = panels[ipanel]
    panel.set_title(panel_title)
 
@@ -99,7 +100,7 @@ for ipanel in range(len(dsets_compare)):
 
    panel.imshow(confMat, interpolation='nearest', cmap="Blues")
    #panel.colorbar()
-   tick_marks = np.arange(len(class_types))
+   tick_marks = np.array(class_types, dtype=np.float32)
    panel.set_xticks(tick_marks, map(str,class_types))
    panel.set_yticks(tick_marks, map(str,class_types))
 
@@ -117,4 +118,12 @@ for panel in panels:
    panel.label_outer()
 
 fig.set_tight_layout(True)
-fig.savefig("mat.png")
+fig.savefig("test_confMat_ivyxgb.png")
+
+with open("test_data_ivyxgb.csv", "w") as fout:
+   rows = [["usage","class",",".join(["coord:"+ff for ff in features]),"weight",",".join(["pred:{}".format(cl) for cl in range(4)])]]
+   for dset in dsets_compare:
+      for ev in range(dset[1].shape[0]):
+         rows.append([dset[0],dset[1][ev],dset[3][ev][0],dset[4][ev],','.join([str(dset[5][ev][icl+2]) for icl in range(len(class_types))])])
+   for row in rows:
+      fout.write(','.join(map(str,row))+'\n')

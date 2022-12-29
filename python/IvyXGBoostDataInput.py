@@ -4,13 +4,14 @@ from sklearn.model_selection import train_test_split
 
 
 class IvyXGBoostDataInput:
-   def __init__(self, feature_names, class_branch_name = None):
+   def __init__(self, feature_names, class_branch_name = None, missing_value_default = -999.):
       """
       IvyXGBoostDataInput constructor:
       - file_name: Input ROOT file name
       - tree_name: Name of TTree in the input file
       - feature_names: A list of input 'features' that will be read from the input TTree.
       - class_branch_name: Name of the branch that indicates the 'class' of the data entry. Default: None.
+      - missing_value_default: Missing value indicator. Default: -999 (float).
       """
       self.features = feature_names
       if type(self.features) is str:
@@ -22,6 +23,7 @@ class IvyXGBoostDataInput:
          raise RuntimeError("The class branch should be specified as a string.")
       if self.class_branch in self.features:
          self.features.remove(self.class_branch)
+      self.missing_value_default = np.float32(missing_value_default)
       self.data_train = None
       self.data_test = None
       self.data_control = None
@@ -160,3 +162,17 @@ class IvyXGBoostDataInput:
 
       feat_data = np.column_stack([ arrs[v] for v in self.features ])
       self.add_data(feat_data, weights, class_values, train_fraction, control_fraction, shuffle)
+
+
+   def class_types(self):
+      """
+      Returns the ordered set of class values.
+      """
+      res = None
+      if self.data_train is not None:
+         clm = np.unique(self.data_train[2])
+         cll = [ clm[i] for i in range(clm.shape[0]) ]
+         res = cll
+      if res is None:
+         raise RuntimeError("IvyXGBoostDataInput::class_types: This function should only be called after assigning a training data set.")
+      return res
