@@ -58,20 +58,27 @@ void testIvyXGBTrainer(){
       for (unsigned short ic=0; ic<coordnames.size(); ic++) tmp_map[coordnames.at(ic)] = it_coords->at(ic);
       xgb.eval(tmp_map, *it_preds);
 
+      if (it_preds->size() != it_preds_csv->size()){
+        IVYerr << "Size of predictions " << it_preds->size() << " is not " << it_preds_csv->size() << "." << endl;
+        break;
+      }
+      {
+        auto it_pred = it_preds->begin();
+        auto it_pred_csv = it_preds_csv->begin();
+        unsigned short ipred = 0;
+        while (it_pred!=it_preds->end()){
+          if (std::abs((*it_pred) - (*it_pred_csv))>std::max((*it_pred), (*it_pred_csv))*1e-3){
+            IVYerr << "Prediction " << ipred << " for row " << irow << " is significantly different." << endl;
+          }
+          it_pred++;
+          it_pred_csv++;
+          ipred++;
+        }
+      }
+
       it_coords++;
       it_preds_csv++;
       it_preds++;
-    }
-  }
-  for (unsigned long long int irow=0; irow<nrows; irow++){
-    if (preds.at(irow).size() != preds_csv.at(irow).size()){
-      IVYerr << "Size of predictions " << preds.at(irow).size() << " is not " << preds_csv.at(irow).size() << endl;
-      break;
-    }
-    for (unsigned short ipred=0; ipred<preds.at(irow).size(); ipred++){
-      if (std::abs(preds.at(irow).at(ipred) - preds_csv.at(irow).at(ipred))>std::max(preds.at(irow).at(ipred), preds_csv.at(irow).at(ipred))*1e-3){
-        IVYerr << "Prediction " << ipred << " for row " << irow << " is significantly different." << endl;
-      }
     }
   }
 }
