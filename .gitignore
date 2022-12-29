@@ -26,6 +26,7 @@ test/*.root
 test/*.txt
 test/*.bin
 test/*.json
+test/*.dump
 *.root
 *.txt
 obj

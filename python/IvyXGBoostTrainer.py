@@ -80,7 +80,7 @@ class IvyXGBoostTrainer:
 
    def save_model(self, fname):
       if self.booster is not None:
-         if fname.endswith(".json"):
+         if fname.endswith(".dump"):
             self.booster.dump_model(fname)
          else:
             self.booster.save_model(fname)
